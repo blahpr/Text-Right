@@ -23,7 +23,7 @@ class FileOrganizerApp:
         self.new_names = {}
         self.data_folder = os.path.join(os.path.dirname(__file__), 'data')
         self.root.title("Text Right v1.0")
-        self.root.geometry("1100x600")  # Increase window width
+        self.root.geometry("1100x600")  # main window size
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
 
@@ -262,9 +262,13 @@ class FileOrganizerApp:
             self.root.title(f"Text Right v1.0 - {self.selected_folder}")
 
     def populate_listbox(self):
+        # Clear the listbox and Treeview
         self.listbox.delete(0, END)
         self.preview_tree.delete(*self.preview_tree.get_children())
         self.rename_button.config(state=tk.DISABLED)
+
+        # Set a monospaced font for consistent character width in the top Listbox
+        self.listbox.config(font=('Courier', 13, 'bold'), foreground='green', background='lightgrey')
         for filename in os.listdir(self.selected_folder):
             self.listbox.insert(END, filename)
 
@@ -286,6 +290,12 @@ class FileOrganizerApp:
             'remove_hyphen': self.remove_hyphen_var.get(),
             'remove_double_spaces': self.remove_double_spaces_var.get(),
         }
+
+        # Create a Style and configure font for Treeview
+        style = ttk.Style()
+        style.configure("Treeview", font=('Courier', 10, 'bold'), foreground='blue', background='lightgrey')
+
+        # Insert the filenames and their new names into the Treeview
         for filename in selected_files:
             new_name = self.simplify_name(filename, options)
             self.preview_tree.insert("", "end", text=filename, values=(new_name,))
