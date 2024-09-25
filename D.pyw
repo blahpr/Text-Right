@@ -399,33 +399,52 @@ class FileOrganizerApp:
 
     def simplify_name(self, filename, options):
         name, ext = os.path.splitext(filename)
+        
+        # Remove special characters if the option is enabled
         if options['remove_special']:
             name = re.sub(r'[^\w\s.-]', '', name)
+        
+        # Replace underscores with spaces if the option is enabled
         if options['replace_underscore']:
             name = name.replace('_', ' ')
+        
+        # Replace dots, but preserve dots within numbers (e.g., version numbers)
         if options['replace_dot']:
-        # Keep periods within numbers, replace only other periods
-            name = re.sub(r'(?<!\d)\.(?!\d)', ' ', name)
+            # Replace dots between words, but keep dots within numbers (e.g., "v1.0")
+            # Also remove dots after letters and before numbers or other letters (e.g., "Plus.26" -> "Plus 26")
+            name = re.sub(r'(?<=[a-zA-Z])\.(?=\d)', ' ', name)  # Handles "Plus.26" -> "Plus 26"
+            name = re.sub(r'(?<=\d)\.(?=[a-zA-Z])', ' ', name)  # Handles dots between numbers and letters
+            name = re.sub(r'(?<!\d)\.(?!\d)', ' ', name)  # Replace other dots with spaces except between numbers
+        
+        # Remove extra spaces if the option is enabled
         if options['remove_double_spaces']:
             name = re.sub(r'\s+', ' ', name)
+        
+        # Replace hyphens with spaces if the option is enabled
         if options['remove_hyphen']:
             name = name.replace('-', ' ')
-        # Add a space before uppercase letters that follow lowercase letters, but only if the checkbox is selected
+        
+        # Add a space before uppercase letters that follow lowercase letters, if the option is enabled
         if self.add_space_before_uppercase_var.get():
             name = re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', name)
-        # Add a space between numbers and letters
+        
+        # Add a space between numbers and letters if the option is enabled
         if options['remove_double_spaces']:
             name = re.sub(r'(?<=\d)(?=[A-Za-z])', ' ', name)
+        
         # Optional: Add space after periods if followed by letters (e.g., "360.Utility" -> "360 Utility")
         if options['replace_dot']:
             name = re.sub(r'\.(?=[A-Za-z])', ' ', name)
+        
         # Replace hyphens and other separators with spaces
         if options['remove_hyphen']:
             name = re.sub(r'[^\w\s\.]', ' ', name)
+        
         # Remove extra spaces (redundant, but ensures clean output)
         if options['remove_double_spaces']:
             name = re.sub(r'\s+', ' ', name)
         
+        # Return the modified name along with the original file extension
         return f"{name.strip()}{ext}"
 
     def load_data(self):
